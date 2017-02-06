@@ -1,0 +1,101 @@
+/*
+    Edit me.
+*/
+body {
+    font-family: "Segoe UI";
+    font-size: 16px;
+    color: #585858;
+    display: flex;
+}
+
+input[type=text] {
+    display: inline-block;
+    font-family: "Segoe UI";
+    font-size: 2em;
+    color: #585858;
+    text-align: center;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    background-color: transparent;
+    margin-right: 0.6em;
+    width: 100px;
+    transition: all 300ms ease;
+}
+input[type=text]:focus {
+    border-bottom-color: #1079d4;
+    outline: none;
+    transform: scale(1.04);
+    transition: all 100ms ease;
+}
+
+button {
+    display: inline-block;
+    font-family: "Segoe UI";
+    color: #fff;
+    background-color: #1592ff;
+    border: none;
+    border-radius: 2px;
+    font-size: 1.2em;
+    padding: 0.5em 1.5em;
+    transition: all 300ms ease;
+}
+button:hover, 
+button:focus {
+    cursor: pointer;
+    outline: none;
+    transform: scale(1.04);
+    transition: all 100ms ease;
+}
+button:active {
+    background-color: #1079d4;
+    transform: scale(1);
+    transition: all 100ms ease;
+}
+
+.sec-start {
+    display: inline-block;
+    margin: auto;
+    padding: 2em;
+    background-color: #f7f7f7;
+    border-radius: 0.33em;
+    min-width: 300px;
+}
+
+.sec-start .description {
+    font-size: 1.2em;
+    margin-bottom: 0.8em;
+}
+.sec-start .fields {
+    display: flex;
+    position: relative;
+}
+#message {
+    margin-top: 0.7em;
+    font-size: 0.8em;
+    color: #ed1c24;
+    position: absolute;
+    background-color: #fff6e0;
+    border: 2px solid #ffb900;
+    border-radius: 5px;
+    bottom: -70px;
+    margin: 0;
+    padding: 10px;
+
+    transition: all 300ms ease;
+}
+#message::before {
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 7px 10px 7px;
+    border-color: transparent transparent #ffb900 transparent;
+    position: absolute;
+    top: -12px;
+}
+#message.hidden {
+    opacity: 0;
+    position: absolute;
+    left: -999999px;
+    transition: all 300ms ease;
+}
