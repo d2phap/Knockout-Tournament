@@ -2,7 +2,7 @@
 // Feel free to add other JS files in this directory as you see fit.
 "use strict"
 
-//const {Tournament, Match, Team} = require('./game')
+const {Tournament, Match, Team} = require('./game')
 
 var tournament
 
@@ -19,8 +19,8 @@ window.onload = () => {
 
         SendRequest(url, "POST", params, (status, response) => {
             if (status == 200) { // success
-                tournament = response
-                //tournament = new Tournament(response.tournamentId, )
+                //tournament = response
+                tournament = new Tournament(response.tournamentId, null, 2)
 
                 console.log(tournament)
             }
