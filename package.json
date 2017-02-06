@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "start": "node ./server/index.js",
-    "build": "node_modules/.bin/webpack --progress --profile --colors --display-error-details --display-cached",
+    "build": "node_modules/.bin/webpack --colors --display-error-details --display-cached",
     "test:integration": "mocha ./test/integration/**/*_test.js",
     "test:karma": "karma start ./test/karma/karma-configuration.js",
     "test": "npm run test:integration && npm run test:karma -- --single-run"

@@ -63,80 +63,49 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-class Team {
-	constructor(id, name, score) {
-		this.id = id
-		this.name = name
-		this.score = score
-	}
-
-}
-
-
-class Match {
-	constructor(id, round, teams, score) {
-		this.id = id
-		this.round = round
-		this.teams = teams
-		this.score = score
-	}
-
-}
-
-
-class Tournament {
-	constructor(id, matchups, teamsPerMatch) {
-		this.id = id
-		this.matchups = matchups
-		this.teamsPerMatch = teamsPerMatch
-	}
-
-}
-
-
-module.exports = {Tournament, Match, Team};
-
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-// Edit me.
-// Feel free to add other JS files in this directory as you see fit.
 
 
-const {Tournament, Match, Team} = __webpack_require__(0)
+const { Match } = __webpack_require__(2)
+const { Team } = __webpack_require__(3)
+const { Tournament } = __webpack_require__(4)
+
+
+const helper = __webpack_require__(1)
+const config = __webpack_require__(5)
 
 var tournament
+const localhost = "http://localhost:8765/"
 
 window.onload = () => {
+    let tooltip = document.getElementById("message")
 
     // onClick event of START button
     document.getElementById("start").addEventListener("click", () => {
         let txtNumberOfTeams = document.getElementById("numberOfTeams")
-        let url = "http://localhost:8765/tournament"
+        let url = localhost + "tournament"
         let params = "numberOfTeams=" + txtNumberOfTeams.value
+        
 
         // hide error message if it is opened
-        hideMessage()
+        helper.hideMessage(tooltip)
 
-        SendRequest(url, "POST", params, (status, response) => {
+        helper.sendRequest(url, "POST", params, (status, response) => {
             if (status == 200) { // success
                 //tournament = response
-                tournament = new Tournament(response.tournamentId, null, 2)
+                tournament = new Tournament(response.tournamentId, null, config.TEAMS_PER_MATCH)
 
                 console.log(tournament)
             }
             else { // error
-                displayMessage(response.message)
+                helper.displayMessage(tooltip, response.message)
                 txtNumberOfTeams.focus()
                 txtNumberOfTeams.select()
             }
@@ -147,25 +116,10 @@ window.onload = () => {
     document.getElementById("numberOfTeams").addEventListener("change", () => {
 
         // hide error message
-        hideMessage()
+        helper.hideMessage(tooltip)
     })
 
-    // display error message
-    var displayMessage = (msg) => {
-        let tooltip = document.getElementById("message")
-        tooltip.innerText = msg
-
-        // display tooltip
-        tooltip.className = ""
-    }
-
-    // hide error message
-    var hideMessage = () => {
-        let tooltip = document.getElementById("message")
-
-        // display tooltip
-        tooltip.className = "hidden"
-    }
+    
 
 
 
@@ -176,8 +130,27 @@ window.onload = () => {
 }
 
 
+
+
+
+
+
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sendRequest", function() { return sendRequest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayMessage", function() { return displayMessage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideMessage", function() { return hideMessage; });
+
+
+
 // Send HTTP request to server
-var SendRequest = (url, type, params, callback) => {
+var sendRequest = (url, type, params, callback) => {
     let http = new XMLHttpRequest()
 
     http.open(type, url, true)
@@ -196,6 +169,104 @@ var SendRequest = (url, type, params, callback) => {
 
     http.send(params)
 }
+
+// display error message
+var displayMessage = (tooltip, msg) => {
+	tooltip.innerText = msg
+
+	// display tooltip
+	tooltip.className = ""
+}
+
+// hide error message
+var hideMessage = (tooltip) => {
+	// display tooltip
+	tooltip.className = "hidden"
+}
+
+
+
+
+
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+class Match {
+	constructor(id, round, teams, score) {
+		this.id = id
+		this.round = round
+		this.teams = teams
+		this.score = score
+	}
+
+}
+
+module.exports = { Match };
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+class Team {
+	constructor(id, name, score) {
+		this.id = id
+		this.name = name
+		this.score = score
+	}
+
+}
+
+module.exports = { Team };
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+
+class Tournament {
+	constructor(id, matchups, teamsPerMatch) {
+		this.id = id
+		this.matchups = matchups
+		this.teamsPerMatch = teamsPerMatch
+	}
+
+}
+
+
+module.exports = { Tournament };
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+// Constants shared between client and server.
+
+var TEAMS_PER_MATCH = 2;
+
+var exports = exports || null;
+if (exports) {
+  exports.TEAMS_PER_MATCH = TEAMS_PER_MATCH;
+}
+
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Edit me.
+// Feel free to add other JS files in this directory as you see fit.
+
+
+
+__webpack_require__(0)
 
 
 
