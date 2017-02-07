@@ -90,26 +90,65 @@ window.onload = () => {
     // onClick event of START button
     document.getElementById("start").addEventListener("click", () => {
         let txtNumberOfTeams = document.getElementById("numberOfTeams")
-        let url = localhost + "tournament"
-        let params = "numberOfTeams=" + txtNumberOfTeams.value
+        let url = `${localhost}tournament`
+        let params = `numberOfTeams=${txtNumberOfTeams.value}`
         
 
         // hide error message if it is opened
         helper.hideMessage(tooltip)
 
-        helper.sendRequest(url, "POST", params, (status, response) => {
-            if (status == 200) { // success
-                //tournament = response
-                tournament = new Tournament(response.tournamentId, null, config.TEAMS_PER_MATCH)
+        helper.fetchData(url, "POST", params, (tournamentData) => {
+            let matchUps = new Array()
 
-                console.log(tournament)
-            }
-            else { // error
-                helper.displayMessage(tooltip, response.message)
-                txtNumberOfTeams.focus()
-                txtNumberOfTeams.select()
-            }
+
+
+
+
+
+            //read MatchUps data
+            tournamentData.matchUps.forEach((item) => {
+                let teams = new Array(config.TEAMS_PER_MATCH)
+
+                //read Teams of match
+                item.teamIds.forEach((teamId) => {
+                    let teamName = ""
+                    let teamScore = 0
+                    let teamParams = `tournamentId=${tournamentData.tournamentId}&teamId=${teamId}`
+
+                    //read Team data from server
+
+                    // helper.fetchData(`${localhost}team`, "GET", teamParams, (teamData) => {
+                    //     teamName = teamData.name
+                    //     teamScore = teamData.score
+
+                    //     console.log(`team name = ${teamName} \r\n team score = ${teamScore}`)
+                    // })
+
+                    let teamObject = await getTeam(tournamentData.tournamentId, teamId)
+                    console.log(teamObject)
+                    teams.push(teamObject)
+
+                }, this) //end foreach Teams
+
+                let match = new Match(item.match, 0, teams, 0)
+                matchUps.push(match)
+            }, this) //end foreach MatchUps
+
+
+
+
+
+
+            tournament = new Tournament(tournamentData.tournamentId, matchUps, config.TEAMS_PER_MATCH)
+            console.log(tournament)
+
+        }, (err) => { //on error
+            helper.displayMessage(tooltip, err.message)
+            txtNumberOfTeams.focus()
+            txtNumberOfTeams.select()
         })
+
+        
     })
 
     // onChange of numberOfTeams text box
@@ -119,8 +158,13 @@ window.onload = () => {
         helper.hideMessage(tooltip)
     })
 
-    
+    //read Team data from server
+    var getTeam = (tournamentId, teamId) => {
+        let teamParams = `tournamentId=${tournamentId}&teamId=${teamId}`
 
+        let teamData = helper.fetchData(`${localhost}team`, "GET", teamParams)
+        return new Team(teamData.id, teamData.name, teamData.score)
+    }
 
 
 
@@ -144,6 +188,7 @@ window.onload = () => {
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sendRequest", function() { return sendRequest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fetchData", function() { return fetchData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayMessage", function() { return displayMessage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideMessage", function() { return hideMessage; });
 
@@ -169,6 +214,45 @@ var sendRequest = (url, type, params, callback) => {
 
     http.send(params)
 }
+
+
+var fetchData = (url, method, data, onSuccess, onError = null) => {
+    let init = {
+        headers: new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }),
+        method: method
+    }
+
+    //add parameters
+    if (method == "GET") {
+        url = `${url}?${data}`
+    }
+    //a request using the GET or HEAD method cannot have a body
+    else {
+        init.body = data
+    }
+
+    let request = new Request(url, init)
+
+    fetch(request).then((response) => { //on successful
+        if(response.ok) {
+            return Promise.resolve(response) 
+        }
+    }).then((json) => {
+        return json.json()
+    }).then((data) => { //data is ready
+        onSuccess(data)
+    }).catch((err) => { //on error
+        if (onError != null) {
+            onError(err)
+        }
+    })
+}
+
+
+
+
 
 // display error message
 var displayMessage = (tooltip, msg) => {
