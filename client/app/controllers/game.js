@@ -1,18 +1,18 @@
-"use strict"
+"use strict";
 
-const { Match } = require('../models/Match.js')
-const { Team } = require('../models/Team.js')
-const { Tournament } = require('../models/Tournament.js')
+const { Match } = require('../models/Match.js');
+const { Team } = require('../models/Team.js');
+const { Tournament } = require('../models/Tournament.js');
 
 
-const helper = require('./helper.js')
-const config = require('../../../shared/config.js')
+const helper = require('./helper.js');
+const config = require('../../../shared/config.js');
 
 var tournament;
 const localhost = "http://localhost:8765/";
 
 window.onload = () => {
-    let tooltip = document.getElementById("message")
+    let tooltip = document.getElementById("message");
 
     // onClick event of START button
     document.getElementById("start").addEventListener("click", () => {
@@ -21,16 +21,28 @@ window.onload = () => {
         // hide error message if it is opened
         helper.hideMessage(tooltip);
 
+        //start game
         getTournament(txtNumberOfTeams.value).then((data) => {
             tournament = data;
-            console.log(tournament);
+            console.info(data);
+            if (data.hasOwnProperty("error")) {
+
+                if (data.errorAt == "tournament") {
+                    helper.displayMessage(tooltip, data.message);
+                }
+                else {
+                    helper.displayMessage(tooltip, "There was an error from server. \nPlease try again later!");
+                }
+                
+                txtNumberOfTeams.focus();
+                txtNumberOfTeams.select();
+
+                tournament = null;
+                return;
+            }
+            
         });
         
-
-
-        // helper.displayMessage(tooltip, err.message)
-        // txtNumberOfTeams.focus()
-        // txtNumberOfTeams.select()
         
     })
 
@@ -52,12 +64,18 @@ window.onload = () => {
 var getTournament = async (numberOfTeams) => {
 
 	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	console.info("|--- Fetching tournament");
+	console.info("|--- START fetching tournament");
 
 
 	// retrieve Tournament info from server
     let request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
+    
+    // check error message
+    if (tournamentData.hasOwnProperty("error")) {
+        tournamentData.errorAt = "tournament";
+        return tournamentData;
+    }
 
 	// build tournament data ******************
 	let tournamentItem = new Tournament();
@@ -91,11 +109,20 @@ var getTournament = async (numberOfTeams) => {
             request = helper.getRequestHeader(`${localhost}team`, "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
             let teamData = await (await fetch(request)).json();
 
+            // check error message
+            if (teamData.hasOwnProperty("error")) {
+                teamData.errorAt = "team";
+                return teamData;
+            }
+
 			team.name = teamData.name;
 			team.score = teamData.score;
 
 			// add a new team
 			teams.push(team);
+
+            //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+            console.info("|    |    |    Done! Team ID: " + team.id);
 
 		} // end for of match.teamIds
 
@@ -106,11 +133,21 @@ var getTournament = async (numberOfTeams) => {
 		// retrieve Match info from server
 		request = helper.getRequestHeader(`${localhost}match`, "GET", `tournamentId=${tournamentItem.id}&round=${match.round}&match=${match.id}`);
         let matchUpData = await (await fetch(request)).json();
+
+        // check error message
+        if (matchUpData.hasOwnProperty("error")) {
+            matchUpData.errorAt = "match";
+            return matchUpData;
+        }
+
 		match.score = matchUpData.score;
 
 
 		// add a new match
 		matchUps.push(match);
+
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        console.info("|    |    Done! Match ID: " + match.id);
 
 	} // end for of matchUps
 
@@ -118,7 +155,7 @@ var getTournament = async (numberOfTeams) => {
 	tournamentItem.matchUps = matchUps;
 
 	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	console.info("|--- Fetched tournament: " + tournamentItem.id);
+	console.info("|--- FINISHED fetching tournament: " + tournamentItem.id);
 	// console.info(tournament);
 
     return tournamentItem;
