@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,29 +73,33 @@
 "use strict";
 
 
-const { Match } = __webpack_require__(2);
-const { Team } = __webpack_require__(3);
-const { Tournament } = __webpack_require__(4);
+const { MatchUp } = __webpack_require__(4);
+const { Team } = __webpack_require__(6);
+const { Round } = __webpack_require__(5);
+const { Tournament } = __webpack_require__(7);
 
+const { RoundController } = __webpack_require__(2);
+const { MatchUpController } = __webpack_require__(1);
+const helper = __webpack_require__(3);
 
-const helper = __webpack_require__(1);
-const config = __webpack_require__(5);
+// const config = require('../../../shared/config.js');
 
 var tournament;
 const localhost = "http://localhost:8765/";
 
 window.onload = () => {
     let tooltip = document.getElementById("message");
+    
 
     // onClick event of START button
     document.getElementById("start").addEventListener("click", () => {
-        let txtNumberOfTeams = document.getElementById("numberOfTeams");
+        var numberOfTeams = document.getElementById("numberOfTeams").value;
         
         // hide error message if it is opened
         helper.hideMessage(tooltip);
 
         //start game
-        getTournament(txtNumberOfTeams.value).then((data) => {
+        getTournament(numberOfTeams).then((data) => {
             tournament = data;
             console.info(data);
             if (data.hasOwnProperty("error")) {
@@ -133,15 +137,33 @@ window.onload = () => {
 
 
 
-
 var getTournament = async (numberOfTeams) => {
+
+    // retrieve teamsPerMatch info from server
+    let request = helper.getRequestHeader(`${localhost}shared/config.js`, "GET");
+    const configJs = await (await fetch(request)).text();
+    
+    // add script to source code
+    let script = document.getElementById("config");
+    if (script != null) { // exist
+        document.body.removeChild(script);
+    }
+    script = document.createElement("script");
+    script.setAttribute("id", "config");
+    script.innerHTML = `${configJs}`;
+    document.body.appendChild(script);
+    
+    // variables
+    const teamsPerMatch = TEAMS_PER_MATCH;
+    let numberOfRounds = RoundController.getNumberOfRounds(numberOfTeams, teamsPerMatch);
+    let numberOfMatchUps = MatchUpController.getNumberOfMatchUps (numberOfTeams, teamsPerMatch);
 
 	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	console.info("|--- START fetching tournament");
 
 
 	// retrieve Tournament info from server
-    let request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
+    request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
     
     // check error message
@@ -153,14 +175,14 @@ var getTournament = async (numberOfTeams) => {
 	// build tournament data ******************
 	let tournamentItem = new Tournament();
 	tournamentItem.id = tournamentData.tournamentId;
-	tournamentItem.teamsPerMatch = config.TEAMS_PER_MATCH;
+	tournamentItem.teamsPerMatch = teamsPerMatch;
 
 	// build matchups data ********************
 	let matchUps = new Array();
 
 	for (let match_item of tournamentData.matchUps) {
 
-		let match = new Match();
+		let match = new MatchUp();
 		match.id = match_item.match;
 		match.round = 0; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -245,6 +267,48 @@ var getTournament = async (numberOfTeams) => {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+class MatchUpController {
+    constructor() {
+        
+    }
+    
+    // get number of matchUps in a tournament
+    static getNumberOfMatchUps (numberOfTeams, teamsPerMatch) {
+        let match_count = 0;
+        while (numberOfTeams != 1) {
+            numberOfTeams = numberOfTeams / teamsPerMatch;
+            match_count += numberOfTeams;
+        }
+        return match_count;
+    }
+    
+}
+
+module.exports = { MatchUpController };
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+class RoundController {
+    constructor () {
+
+    }
+    
+    // get number of rounds in a tournament
+    static getNumberOfRounds (numberOfTeams, teamsPerMatch) {
+        let numberOfRounds = Math.log(numberOfTeams) / Math.log(teamsPerMatch);
+        return Math.floor(numberOfRounds);
+    }
+    
+}
+
+module.exports = { RoundController };
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -256,7 +320,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 // build Request for fetching data from server
-var getRequestHeader = (url, method, data) => {
+var getRequestHeader = (url, method, data = null) => {
     let init = {
         headers: new Headers({
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -265,11 +329,13 @@ var getRequestHeader = (url, method, data) => {
     };
 
     //add parameters
-    if (method == "GET") {
-        url = `${url}?${data}`;
-    }
-    else { //a request using the GET or HEAD method cannot have a body
-        init.body = data;
+    if (data != null) {
+        if (method == "GET") {
+            url = `${url}?${data}`;
+        }
+        else { //a request using the GET or HEAD method cannot have a body
+            init.body = data;
+        }
     }
 
     return new Request(url, init);
@@ -302,50 +368,65 @@ var hideMessage = (tooltip) => {
 
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports) {
 
-class Match {
-	constructor(id, round, teams, score) {
+class MatchUp {
+	constructor(id, roundId, tournamentId, score, teams, winnerId) {
 		this.id = id;
-		this.round = round;
-		this.teams = teams;
+		this.roundId = roundId;
+		this.tournamentId = tournamentId;
 		this.score = score;
+		this.teams = teams;
+		this.winnerId = winnerId;
 	}
-
 }
 
-module.exports = { Match };
+module.exports = { MatchUp };
 
 
 /***/ }),
-/* 3 */
+/* 5 */
+/***/ (function(module, exports) {
+
+class Round {
+	constructor(id, tournamentId, matchUps) {
+		this.id = id;
+		this.tournamentId = tournamentId;
+		this.matchUps = matchUps;
+	}
+}
+
+module.exports = { Round };
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports) {
 
 class Team {
-	constructor(id, name, score) {
+	constructor(id, tournamentId, name, score) {
 		this.id = id;
+		this.tournamentId = tournamentId;
 		this.name = name;
 		this.score = score;
 	}
-
 }
 
 module.exports = { Team };
 
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports) {
 
-
 class Tournament {
-	constructor(id, matchUps, teamsPerMatch) {
+	constructor(id, teamsPerMatch, rounds, winnerId) {
 		this.id = id;
-		this.matchUps = matchUps;
 		this.teamsPerMatch = teamsPerMatch;
+		this.rounds = rounds;
+		this.winnerId = winnerId;
 	}
-
 }
 
 
@@ -353,22 +434,7 @@ module.exports = { Tournament };
 
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-// Constants shared between client and server.
-
-var TEAMS_PER_MATCH = 2;
-
-var exports = exports || null;
-if (exports) {
-  exports.TEAMS_PER_MATCH = TEAMS_PER_MATCH;
-}
-
-
-
-/***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

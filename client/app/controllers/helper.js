@@ -2,7 +2,7 @@
 
 
 // build Request for fetching data from server
-export var getRequestHeader = (url, method, data) => {
+export var getRequestHeader = (url, method, data = null) => {
     let init = {
         headers: new Headers({
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -11,11 +11,13 @@ export var getRequestHeader = (url, method, data) => {
     };
 
     //add parameters
-    if (method == "GET") {
-        url = `${url}?${data}`;
-    }
-    else { //a request using the GET or HEAD method cannot have a body
-        init.body = data;
+    if (data != null) {
+        if (method == "GET") {
+            url = `${url}?${data}`;
+        }
+        else { //a request using the GET or HEAD method cannot have a body
+            init.body = data;
+        }
     }
 
     return new Request(url, init);

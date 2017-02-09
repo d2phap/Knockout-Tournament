@@ -1,11 +1,10 @@
-
 class Tournament {
-	constructor(id, matchUps, teamsPerMatch) {
+	constructor(id, teamsPerMatch, rounds, winnerId) {
 		this.id = id;
-		this.matchUps = matchUps;
 		this.teamsPerMatch = teamsPerMatch;
+		this.rounds = rounds;
+		this.winnerId = winnerId;
 	}
-
 }
 
 

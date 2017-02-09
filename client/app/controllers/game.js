@@ -1,28 +1,32 @@
 "use strict";
 
-const { Match } = require('../models/Match.js');
+const { MatchUp } = require('../models/MatchUp.js');
 const { Team } = require('../models/Team.js');
+const { Round } = require('../models/Round.js');
 const { Tournament } = require('../models/Tournament.js');
 
-
+const { RoundController } = require('./RoundController.js');
+const { MatchUpController } = require('./MatchUpController.js');
 const helper = require('./helper.js');
-const config = require('../../../shared/config.js');
+
+// const config = require('../../../shared/config.js');
 
 var tournament;
 const localhost = "http://localhost:8765/";
 
 window.onload = () => {
     let tooltip = document.getElementById("message");
+    
 
     // onClick event of START button
     document.getElementById("start").addEventListener("click", () => {
-        let txtNumberOfTeams = document.getElementById("numberOfTeams");
+        var numberOfTeams = document.getElementById("numberOfTeams").value;
         
         // hide error message if it is opened
         helper.hideMessage(tooltip);
 
         //start game
-        getTournament(txtNumberOfTeams.value).then((data) => {
+        getTournament(numberOfTeams).then((data) => {
             tournament = data;
             console.info(data);
             if (data.hasOwnProperty("error")) {
@@ -60,15 +64,33 @@ window.onload = () => {
 
 
 
-
 var getTournament = async (numberOfTeams) => {
+
+    // retrieve teamsPerMatch info from server
+    let request = helper.getRequestHeader(`${localhost}shared/config.js`, "GET");
+    const configJs = await (await fetch(request)).text();
+    
+    // add script to source code
+    let script = document.getElementById("config");
+    if (script != null) { // exist
+        document.body.removeChild(script);
+    }
+    script = document.createElement("script");
+    script.setAttribute("id", "config");
+    script.innerHTML = `${configJs}`;
+    document.body.appendChild(script);
+    
+    // variables
+    const teamsPerMatch = TEAMS_PER_MATCH;
+    let numberOfRounds = RoundController.getNumberOfRounds(numberOfTeams, teamsPerMatch);
+    let numberOfMatchUps = MatchUpController.getNumberOfMatchUps (numberOfTeams, teamsPerMatch);
 
 	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	console.info("|--- START fetching tournament");
 
 
 	// retrieve Tournament info from server
-    let request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
+    request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
     
     // check error message
@@ -80,14 +102,14 @@ var getTournament = async (numberOfTeams) => {
 	// build tournament data ******************
 	let tournamentItem = new Tournament();
 	tournamentItem.id = tournamentData.tournamentId;
-	tournamentItem.teamsPerMatch = config.TEAMS_PER_MATCH;
+	tournamentItem.teamsPerMatch = teamsPerMatch;
 
 	// build matchups data ********************
 	let matchUps = new Array();
 
 	for (let match_item of tournamentData.matchUps) {
 
-		let match = new Match();
+		let match = new MatchUp();
 		match.id = match_item.match;
 		match.round = 0; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
