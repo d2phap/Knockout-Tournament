@@ -7,6 +7,7 @@ export var getRequestHeader = (url, method, data = null) => {
         headers: new Headers({
             'Content-Type': 'application/x-www-form-urlencoded'
         }),
+        mode: 'no-cors',
         method: method
     };
 

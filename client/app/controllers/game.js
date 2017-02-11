@@ -37,6 +37,8 @@ window.onload = () => {
         //start game
         startTournament(numberOfTeams).then((data) => {
             _tournament = data;
+
+            document.getElementById("winner").innerText = data.winner.name;
             
             if (data.hasOwnProperty("error")) {
 

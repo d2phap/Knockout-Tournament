@@ -7,7 +7,7 @@ module.exports = function (configuration) {
     exclude: [
     ],
     files: [
-      '../../client/**/*.js',
+      '../../client/dist/bundle.js',
       '../../test/karma/**/*_test.js'
     ],
     frameworks: [
@@ -19,3 +19,8 @@ module.exports = function (configuration) {
     singleRun: false
   })
 }
+
+
+
+
+

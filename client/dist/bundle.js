@@ -110,6 +110,8 @@ window.onload = () => {
         //start game
         startTournament(numberOfTeams).then((data) => {
             _tournament = data;
+
+            document.getElementById("winner").innerText = data.winner.name;
             
             if (data.hasOwnProperty("error")) {
 
@@ -159,7 +161,7 @@ var startTournament = async (numberOfTeams) => {
     script.innerHTML = `${configJs}`;
     document.body.appendChild(script);
 
-    console.info("Done! TEAMS_PER_MATCH = " + TEAMS_PER_MATCH);
+    // console.info("Done! TEAMS_PER_MATCH = " + TEAMS_PER_MATCH);
     console.groupEnd();
     /* [/1] *******************************************************************/
 
@@ -468,7 +470,6 @@ class RoundController {
             return initData;
         }
 
-
 		let matchUps = [];
         let teamsInMatchUp = [];
 
@@ -508,6 +509,7 @@ var getRequestHeader = (url, method, data = null) => {
         headers: new Headers({
             'Content-Type': 'application/x-www-form-urlencoded'
         }),
+        mode: 'no-cors',
         method: method
     };
 
