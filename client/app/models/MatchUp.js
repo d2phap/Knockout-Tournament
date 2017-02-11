@@ -1,11 +1,11 @@
 class MatchUp {
-	constructor(id, roundId, tournamentId, score, teams, winnerId) {
+	constructor(id, roundId, tournamentId, score, teams, winner) {
 		this.id = id;
 		this.roundId = roundId;
 		this.tournamentId = tournamentId;
 		this.score = score;
 		this.teams = teams;
-		this.winnerId = winnerId;
+		this.winner = winner;
 	}
 }
 
