@@ -47,6 +47,9 @@ button:not(:disabled):focus {
     transform: scale(1.04);
     transition: all 100ms ease;
 }
+button:not(:disabled):focus {
+    box-shadow: 0 0 5px 0 rgb(21, 146, 255);
+}
 button:not(:disabled):active {
     background-color: #1079d4;
     transform: scale(1);
