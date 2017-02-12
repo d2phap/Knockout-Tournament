@@ -84,7 +84,8 @@ const helper = __webpack_require__(3);
 
 
 
-const localhost = "http://localhost:8765/";
+const localhost = "http://localhost:9876/";
+// const localhost = "http://localhost:8765/";
 
 
 
@@ -161,7 +162,7 @@ var startTournament = async (numberOfTeams) => {
     script.innerHTML = `${configJs}`;
     document.body.appendChild(script);
 
-    // console.info("Done! TEAMS_PER_MATCH = " + TEAMS_PER_MATCH);
+    console.info("Done! TEAMS_PER_MATCH = " + TEAMS_PER_MATCH);
     console.groupEnd();
     /* [/1] *******************************************************************/
 
@@ -177,6 +178,9 @@ var startTournament = async (numberOfTeams) => {
 
     request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
+    // let xxx = await fetch(request);
+    // console.log(xxx);
+    // let tournamentData = await xxx.json();
     
     // check error message
     if (tournamentData.hasOwnProperty("error")) {
