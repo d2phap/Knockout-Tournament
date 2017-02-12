@@ -149,21 +149,14 @@ window.onload = () => {
                 winner.innerText = data.winner.name;
                 winner.className = "";
             }
-            
-            
-        });
+        }); // END startTournament
         
         
     });
-
-    
-
+} // END window.onload
 
 
-}
-
-
-
+// initial setup for game
 var initGame = (numberOfMatchUps) => {
 
     let winner = document.getElementById("winner");
@@ -185,7 +178,7 @@ var initGame = (numberOfMatchUps) => {
 }
 
 
-
+// start the tournament game
 var startTournament = async (numberOfTeams) => {
 
     /**************************************************************************
@@ -560,8 +553,8 @@ module.exports = { RoundController };
 /***/ (function(module, exports) {
 
 
-// const GAME_SERVER_URL = "http://localhost:9876/"; // for selenium server
-const GAME_SERVER_URL = "http://localhost:8765/"; // for game server
+const GAME_SERVER_URL = "http://localhost:9876/"; // for selenium server
+// const GAME_SERVER_URL = "http://localhost:8765/"; // for game server
 
 var exports = exports || null;
 if (exports) {
@@ -710,6 +703,9 @@ module.exports = { Tournament };
 
 
 __webpack_require__(0);
+
+
+
 
 
 
