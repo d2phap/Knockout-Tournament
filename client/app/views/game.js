@@ -5,15 +5,11 @@ const { Team } = require('../models/Team.js');
 const { Round } = require('../models/Round.js');
 const { Tournament } = require('../models/Tournament.js');
 
-const { RoundController } = require('./RoundController.js');
-const { MatchUpController } = require('./MatchUpController.js');
-const helper = require('./helper.js');
+const { RoundController } = require('../controllers/RoundController.js');
+const { MatchUpController } = require('../controllers/MatchUpController.js');
+const helper = require('../helper.js');
 
-
-
-// const localhost = "http://localhost:9876/";
-const localhost = "http://localhost:8765/";
-
+const configs = require('../gameConfig.js');
 
 
 window.onload = () => {
@@ -56,7 +52,6 @@ window.onload = () => {
 
         //start game
         startTournament(numberOfTeams).then((data) => {
-            _tournament = data;
             
             txtNumberOfTeams.removeAttribute("disabled");
             btnStart.removeAttribute("disabled");
@@ -72,9 +67,8 @@ window.onload = () => {
                 
                 txtNumberOfTeams.focus();
                 txtNumberOfTeams.select();
-                gameMsg.innerText = ` `;
+                gameMsg.innerText = "";
 
-                _tournament = null;
             }
             else {
                 // show winner info
@@ -82,22 +76,14 @@ window.onload = () => {
                 winner.innerText = data.winner.name;
                 winner.className = "";
             }
-            
-            
-        });
+        }); // END startTournament
         
         
     });
-
-    
-
+} // END window.onload
 
 
-}
-
-
-var _tournament;
-
+// initial setup for game
 var initGame = (numberOfMatchUps) => {
 
     let winner = document.getElementById("winner");
@@ -119,14 +105,14 @@ var initGame = (numberOfMatchUps) => {
 }
 
 
-
+// start the tournament game
 var startTournament = async (numberOfTeams) => {
 
     /**************************************************************************
     * [1] retrieve CONFIGURATION from server */
     console.group("Reading CONFIGURATIONS from server...");
 
-    let request = helper.getRequestHeader(`${localhost}shared/config.js`, "GET");
+    let request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}shared/config.js`, "GET");
     const configJs = await (await fetch(request)).text();
     
     // add script to source code
@@ -151,7 +137,7 @@ var startTournament = async (numberOfTeams) => {
     // retrieve Tournament info from server 
     console.group("Retrieving TOURNAMENT info from server ...");
 
-    request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
+    request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
     
     // check error message
@@ -193,7 +179,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Retrieving TEAM INFO from server...`);
 
             // retrieve Team info from server
-            request = helper.getRequestHeader(`${localhost}team`, "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
+            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}team`, "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
             let teamData = await (await fetch(request)).json();
 
             // check error message
@@ -294,7 +280,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Retrieving MATCH SCORE from server of match.id = ${match.id} ...`);
 
             // retrieve Match score from server ------------------------------
-            request = helper.getRequestHeader(`${localhost}match`, "GET", `tournamentId=${tournamentItem.id}&round=${match.roundId}&match=${match.id}`);
+            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}match`, "GET", `tournamentId=${tournamentItem.id}&round=${match.roundId}&match=${match.id}`);
             let matchUpData = await (await fetch(request)).json();
 
             // check error message
@@ -333,7 +319,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Determining the WINNER of match.id = ${match.id} ...`);
 
             // retrieve Winner Score from server -----------------------------
-            request = helper.getRequestHeader(`${localhost}winner`, "GET", winnerParams);
+            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}winner`, "GET", winnerParams);
             let winnerScoreData = await (await fetch(request)).json();
 
             // get winner of this match

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,20 +73,16 @@
 "use strict";
 
 
-const { MatchUp } = __webpack_require__(4);
-const { Team } = __webpack_require__(6);
-const { Round } = __webpack_require__(5);
-const { Tournament } = __webpack_require__(7);
+const { MatchUp } = __webpack_require__(5);
+const { Team } = __webpack_require__(7);
+const { Round } = __webpack_require__(6);
+const { Tournament } = __webpack_require__(8);
 
 const { RoundController } = __webpack_require__(2);
 const { MatchUpController } = __webpack_require__(1);
-const helper = __webpack_require__(3);
+const helper = __webpack_require__(4);
 
-
-
-// const localhost = "http://localhost:9876/";
-const localhost = "http://localhost:8765/";
-
+const configs = __webpack_require__(3);
 
 
 window.onload = () => {
@@ -129,7 +125,6 @@ window.onload = () => {
 
         //start game
         startTournament(numberOfTeams).then((data) => {
-            _tournament = data;
             
             txtNumberOfTeams.removeAttribute("disabled");
             btnStart.removeAttribute("disabled");
@@ -145,9 +140,8 @@ window.onload = () => {
                 
                 txtNumberOfTeams.focus();
                 txtNumberOfTeams.select();
-                gameMsg.innerText = ` `;
+                gameMsg.innerText = "";
 
-                _tournament = null;
             }
             else {
                 // show winner info
@@ -169,7 +163,6 @@ window.onload = () => {
 }
 
 
-var _tournament;
 
 var initGame = (numberOfMatchUps) => {
 
@@ -199,7 +192,7 @@ var startTournament = async (numberOfTeams) => {
     * [1] retrieve CONFIGURATION from server */
     console.group("Reading CONFIGURATIONS from server...");
 
-    let request = helper.getRequestHeader(`${localhost}shared/config.js`, "GET");
+    let request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}shared/config.js`, "GET");
     const configJs = await (await fetch(request)).text();
     
     // add script to source code
@@ -224,7 +217,7 @@ var startTournament = async (numberOfTeams) => {
     // retrieve Tournament info from server 
     console.group("Retrieving TOURNAMENT info from server ...");
 
-    request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
+    request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
     
     // check error message
@@ -266,7 +259,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Retrieving TEAM INFO from server...`);
 
             // retrieve Team info from server
-            request = helper.getRequestHeader(`${localhost}team`, "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
+            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}team`, "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
             let teamData = await (await fetch(request)).json();
 
             // check error message
@@ -367,7 +360,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Retrieving MATCH SCORE from server of match.id = ${match.id} ...`);
 
             // retrieve Match score from server ------------------------------
-            request = helper.getRequestHeader(`${localhost}match`, "GET", `tournamentId=${tournamentItem.id}&round=${match.roundId}&match=${match.id}`);
+            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}match`, "GET", `tournamentId=${tournamentItem.id}&round=${match.roundId}&match=${match.id}`);
             let matchUpData = await (await fetch(request)).json();
 
             // check error message
@@ -406,7 +399,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Determining the WINNER of match.id = ${match.id} ...`);
 
             // retrieve Winner Score from server -----------------------------
-            request = helper.getRequestHeader(`${localhost}winner`, "GET", winnerParams);
+            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}winner`, "GET", winnerParams);
             let winnerScoreData = await (await fetch(request)).json();
 
             // get winner of this match
@@ -503,8 +496,11 @@ class MatchUpController {
     static getNumberOfMatchUps (numberOfTeams, teamsPerMatch) {
         let match_count = 0;
         while (numberOfTeams != 1) {
-            numberOfTeams = numberOfTeams / teamsPerMatch;
+            numberOfTeams = Math.floor(numberOfTeams / teamsPerMatch);
             match_count += numberOfTeams;
+
+            // console.warn("numberOfTeams = " + numberOfTeams);
+            // console.warn("match_count = " + match_count);
         }
         return match_count;
     }
@@ -561,6 +557,21 @@ module.exports = { RoundController };
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+
+// const GAME_SERVER_URL = "http://localhost:9876/"; // for selenium server
+const GAME_SERVER_URL = "http://localhost:8765/"; // for game server
+
+var exports = exports || null;
+if (exports) {
+	exports.GAME_SERVER_URL = GAME_SERVER_URL;
+}
+
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -621,7 +632,7 @@ var hideMessage = (tooltip) => {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 class MatchUp {
@@ -639,7 +650,7 @@ module.exports = { MatchUp };
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 class Round {
@@ -654,7 +665,7 @@ module.exports = { Round };
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 class Team {
@@ -670,7 +681,7 @@ module.exports = { Team };
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 class Tournament {
@@ -688,7 +699,7 @@ module.exports = { Tournament };
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -697,11 +708,8 @@ module.exports = { Tournament };
 
 
 
-__webpack_require__(0)
 
-
-
-
+__webpack_require__(0);
 
 
 
