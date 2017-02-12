@@ -145,7 +145,7 @@ window.onload = () => {
             }
             else {
                 // show winner info
-                gameMsg.innerText = `Winner`;
+                gameMsg.innerText = "The winner is";
                 winner.innerText = data.winner.name;
                 winner.className = "";
             }
