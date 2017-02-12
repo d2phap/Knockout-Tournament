@@ -98,6 +98,9 @@ window.onload = () => {
         // hide error message
         helper.hideMessage(tooltip);
     });
+
+
+    
     
 
     // onClick event of START button
@@ -108,11 +111,28 @@ window.onload = () => {
         // hide error message if it is opened
         helper.hideMessage(tooltip);
 
+        let winner = document.getElementById("winner");
+        let gameMap = document.getElementById("gameMap");
+        let gameMsg = document.getElementById("gameMsg");
+        let btnStart = document.getElementById("start");
+
+        // hiden winner info
+        winner.innerText = "";
+        winner.className = "hidden";
+        gameMsg.innerText = "Game is loading...";
+
+        // redraw match ups squares
+        gameMap.innerHTML = "";
+
+        txtNumberOfTeams.setAttribute("disabled", "disabled");
+        btnStart.setAttribute("disabled", "disabled");
+
         //start game
         startTournament(numberOfTeams).then((data) => {
             _tournament = data;
-
-            document.getElementById("winner").innerText = data.winner.name;
+            
+            txtNumberOfTeams.removeAttribute("disabled");
+            btnStart.removeAttribute("disabled");
             
             if (data.hasOwnProperty("error")) {
 
@@ -125,10 +145,18 @@ window.onload = () => {
                 
                 txtNumberOfTeams.focus();
                 txtNumberOfTeams.select();
+                gameMsg.innerText = ` `;
 
                 _tournament = null;
-                return;
             }
+            else {
+                // show winner info
+                gameMsg.innerText = `Winner`;
+                winner.innerText = data.winner.name;
+                winner.className = "";
+            }
+            
+            
         });
         
         
@@ -142,6 +170,28 @@ window.onload = () => {
 
 
 var _tournament;
+
+var initGame = (numberOfMatchUps) => {
+
+    let winner = document.getElementById("winner");
+    let gameMap = document.getElementById("gameMap");
+
+    // hiden winner info
+    winner.innerText = "";
+    winner.className = "hidden";
+
+    // redraw match ups squares
+    gameMap.innerHTML = "";
+
+    for (let i = 0; i < numberOfMatchUps; i++) {
+        let matchSquare = document.createElement("li");
+        matchSquare.setAttribute("id", `match-${i}`);
+
+        gameMap.appendChild(matchSquare);
+    }
+}
+
+
 
 var startTournament = async (numberOfTeams) => {
 
@@ -167,8 +217,6 @@ var startTournament = async (numberOfTeams) => {
     /* [/1] *******************************************************************/
 
 
-
-
     /**************************************************************************
     * [2] Send request to server to create a Tournament */
     console.group("Starting TOURNAMENT...");
@@ -178,9 +226,6 @@ var startTournament = async (numberOfTeams) => {
 
     request = helper.getRequestHeader(`${localhost}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
-    // let xxx = await fetch(request);
-    // console.log(xxx);
-    // let tournamentData = await xxx.json();
     
     // check error message
     if (tournamentData.hasOwnProperty("error")) {
@@ -201,12 +246,12 @@ var startTournament = async (numberOfTeams) => {
     tournamentItem.rounds = [];
     tournamentItem.teams = [];
     
-    
 
 
     /**************************************************************************
     * [2.1] create Team list of the tournament */
     console.group("Creating TEAM LIST of the tournament ...");
+    let gameMsg = document.getElementById("gameMsg");
 
     for (let match_item of tournamentData.matchUps) {
 
@@ -248,6 +293,9 @@ var startTournament = async (numberOfTeams) => {
 
             // add team to the Team List
             tournamentItem.teams.push(team);
+
+            // send message on UI
+            gameMsg.innerText = `Game is loading...${Math.ceil((team_id + 1)*100 / numberOfTeams)}%...`;
         }
     }
 
@@ -257,6 +305,11 @@ var startTournament = async (numberOfTeams) => {
     /* [/2.1] *****************************************************************/
 
 
+    // Init game
+    let numberOfMatchUps = MatchUpController.getNumberOfMatchUps (numberOfTeams, TEAMS_PER_MATCH);
+    let currentMatchIndex = 0; // for mark the match done on UI
+    initGame(numberOfMatchUps);
+
 
     /**************************************************************************
     * [2.2] create Round of the tournament */
@@ -264,7 +317,6 @@ var startTournament = async (numberOfTeams) => {
 
     // create tournament data
     let numberOfRounds = RoundController.getNumberOfRounds(numberOfTeams, TEAMS_PER_MATCH);
-    let numberOfMatchUps = MatchUpController.getNumberOfMatchUps (numberOfTeams, TEAMS_PER_MATCH);
     let currentRoundId = 0;
 
     // all teams will join in the first round - also determine the winners of a round
@@ -275,6 +327,8 @@ var startTournament = async (numberOfTeams) => {
     do {
         // start the round
         console.group(`Creating ROUND: ${currentRoundId}`);
+        // send message on UI
+        gameMsg.innerText = `ROUND ${currentRoundId + 1}`;
 
         let round = new Round();
         round.id = currentRoundId;
@@ -299,6 +353,10 @@ var startTournament = async (numberOfTeams) => {
         for (let match_item of matchDataOfRound) {
 
             console.group(`Creating MATCH: ${match_item.match} ...`);
+            // send message on UI
+            let matchElement = document.getElementById(`match-${currentMatchIndex}`);
+            matchElement.className = "playing"; // mark this match is being played
+            gameMsg.innerText = `ROUND ${currentRoundId + 1} - MATCH ${match_item.match + 1}`;
 
             let match = new MatchUp();
             match.id = match_item.match;
@@ -355,6 +413,12 @@ var startTournament = async (numberOfTeams) => {
             match.winner = match.teams.find((a) => {
                 return a.score == winnerScoreData.score;
             });
+
+            // mark this match is done on the UI
+            // document.getElementById(`match-${currentMatchIndex}`).className = "done";
+            matchElement.className = "done";
+            currentMatchIndex++;
+            
 
             console.info(`Done! match.winner =`);
             console.log(match.winner);
