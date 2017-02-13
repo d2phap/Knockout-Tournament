@@ -119,7 +119,6 @@ button:disabled {
     text-align: center;
 }
 #gameInfo #winner {
-    display: block;
     color: #1079d4;
     font-weight: bold;
 }

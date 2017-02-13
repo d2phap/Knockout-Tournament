@@ -1,7 +1,7 @@
 {
-  "author": "Canva",
+  "author": "Duong Dieu Phap",
   "name": "knockout-tournament",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "start": "node ./server/index.js",
     "build": "node_modules/.bin/webpack --colors --display-error-details --display-cached",

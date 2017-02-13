@@ -9,8 +9,6 @@ const { RoundController } = require('../controllers/RoundController.js');
 const { MatchUpController } = require('../controllers/MatchUpController.js');
 const helper = require('../helper.js');
 
-const configs = require('../gameConfig.js');
-
 
 window.onload = () => {
     let tooltip = document.getElementById("message");
@@ -72,7 +70,7 @@ window.onload = () => {
             }
             else {
                 // show winner info
-                gameMsg.innerText = "The winner is";
+                gameMsg.innerText = "is the Winner.";
                 winner.innerText = data.winner.name;
                 winner.className = "";
             }
@@ -112,7 +110,7 @@ var startTournament = async (numberOfTeams) => {
     * [1] retrieve CONFIGURATION from server */
     console.group("Reading CONFIGURATIONS from server...");
 
-    let request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}shared/config.js`, "GET");
+    let request = helper.getRequestHeader("/shared/config.js", "GET");
     const configJs = await (await fetch(request)).text();
     
     // add script to source code
@@ -137,7 +135,7 @@ var startTournament = async (numberOfTeams) => {
     // retrieve Tournament info from server 
     console.group("Retrieving TOURNAMENT info from server ...");
 
-    request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}tournament`, "POST", `numberOfTeams=${numberOfTeams}`);
+    request = helper.getRequestHeader("/tournament", "POST", `numberOfTeams=${numberOfTeams}`);
     let tournamentData = await (await fetch(request)).json();
     
     // check error message
@@ -179,7 +177,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Retrieving TEAM INFO from server...`);
 
             // retrieve Team info from server
-            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}team`, "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
+            request = helper.getRequestHeader("/team", "GET", `tournamentId=${tournamentItem.id}&teamId=${team.id}`);
             let teamData = await (await fetch(request)).json();
 
             // check error message
@@ -280,7 +278,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Retrieving MATCH SCORE from server of match.id = ${match.id} ...`);
 
             // retrieve Match score from server ------------------------------
-            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}match`, "GET", `tournamentId=${tournamentItem.id}&round=${match.roundId}&match=${match.id}`);
+            request = helper.getRequestHeader("/match", "GET", `tournamentId=${tournamentItem.id}&round=${match.roundId}&match=${match.id}`);
             let matchUpData = await (await fetch(request)).json();
 
             // check error message
@@ -319,7 +317,7 @@ var startTournament = async (numberOfTeams) => {
             console.group(`Determining the WINNER of match.id = ${match.id} ...`);
 
             // retrieve Winner Score from server -----------------------------
-            request = helper.getRequestHeader(`${configs.GAME_SERVER_URL}winner`, "GET", winnerParams);
+            request = helper.getRequestHeader("/winner", "GET", winnerParams);
             let winnerScoreData = await (await fetch(request)).json();
 
             // get winner of this match
